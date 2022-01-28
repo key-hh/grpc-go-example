@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/key-hh/grpc-go-example/hello";
+
+package hello;
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message HelloReply {
+  string message = 1;
+
+  message Result {
+    string name = 1;
+    int32 test = 2;
+  }
+  repeated Result results = 2;
+  google.protobuf.Any details = 3;
+  map<string, int32> projects = 4;
+}
