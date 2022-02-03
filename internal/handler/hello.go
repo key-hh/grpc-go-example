@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/key-hh/grpc-go-example/grpc/hello"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 type GreeterServer struct {
@@ -28,7 +27,7 @@ func (*GreeterServer) SayHello(ctx context.Context, req *hello.HelloRequest) (*h
 				Test: req.Age + 2,
 			},
 		},
-		Details: &anypb.Any{TypeUrl: "", Value: []byte("test detail with any")},
+		//Details: &anypb.Any{TypeUrl: "/hello", Value: []byte("test detail with any")},
 		Projects: map[string]int32{
 			"key1": 11,
 			"key2": 12,

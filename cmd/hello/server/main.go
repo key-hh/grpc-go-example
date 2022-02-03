@@ -1,37 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/key-hh/grpc-go-example/grpc/hello"
 	"github.com/key-hh/grpc-go-example/internal/handler"
 	"google.golang.org/grpc"
 )
 
 const (
-	host = "0.0.0.0"
-	port = 8089
+	gRPCAddr = "0.0.0.0:8089"
 )
 
 func main() {
-	addr := fmt.Sprintf("%s:%d", host, port)
-	ln, err := net.Listen("tcp", addr)
+	ln, err := net.Listen("tcp", gRPCAddr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_recovery.UnaryServerInterceptor(),
+		)),
+	)
 	hello.RegisterGreeterServer(srv, &handler.GreeterServer{})
 
-	log.Printf("server is ready for %s", addr)
-
-	if err := srv.Serve(ln); err != nil {
-		if err == grpc.ErrServerStopped {
-			log.Printf("ListenAndServe: %v", err)
-		} else {
-			log.Fatalf("ListenAndServe: %v", err)
+	go func() {
+		if err := srv.Serve(ln); err != nil {
+			if err == grpc.ErrServerStopped {
+				log.Printf("ListenAndServe: %v", err)
+			} else {
+				log.Fatalf("ListenAndServe: %v", err)
+			}
 		}
-	}
+	}()
+
+	log.Printf("server is ready for %s", gRPCAddr)
+
+	sigQuitCh := make(chan os.Signal)
+	signal.Notify(sigQuitCh, syscall.SIGQUIT)
+	<-sigQuitCh
+
+	srv.GracefulStop()
 }
