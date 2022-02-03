@@ -30,5 +30,5 @@ message HelloReply {
   }
   repeated Result results = 2;
   map<string, int32> projects = 3;
-  //google.protobuf.Any details = 3;
+  google.protobuf.Any details = 4;
 }

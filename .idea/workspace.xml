@@ -6,12 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="4a156495-e127-4791-9e9b-3ab4c1cb8e78" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/hello/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/hello/server/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/grpc/hello/hello.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/hello/hello.pb.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/grpc/hello/hello.proto" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/hello/hello.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc/hello/hello_grpc.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/hello/hello_grpc.pb.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/handler/hello.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/handler/hello.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
