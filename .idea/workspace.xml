@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4a156495-e127-4791-9e9b-3ab4c1cb8e78" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/cmd/stream/client/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/stream/server/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc/hello/hello.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/hello/hello.pb.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc/hello/hello.proto" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/hello/hello.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/handler/hello.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/handler/hello.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc/stream/stream.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/stream/stream.pb.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc/stream/stream.proto" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/stream/stream.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc/stream/stream_grpc.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/stream/stream_grpc.pb.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +61,7 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/grpc" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/cmd/stream" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="go" />
@@ -67,6 +69,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/cmd/stream" />
       <recent name="$PROJECT_DIR$/grpc" />
     </key>
     <key name="MoveFile.RECENT_KEYS">

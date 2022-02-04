@@ -22,7 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StreamerClient interface {
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	SendToStream(ctx context.Context, opts ...grpc.CallOption) (Streamer_SendToStreamClient, error)
+	ReceiveFromStream(ctx context.Context, in *StreamRequest, opts ...grpc.CallOption) (Streamer_ReceiveFromStreamClient, error)
+	ChatInStream(ctx context.Context, opts ...grpc.CallOption) (Streamer_ChatInStreamClient, error)
 }
 
 type streamerClient struct {
@@ -33,20 +35,110 @@ func NewStreamerClient(cc grpc.ClientConnInterface) StreamerClient {
 	return &streamerClient{cc}
 }
 
-func (c *streamerClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
-	err := c.cc.Invoke(ctx, "/stream.Streamer/SayHello", in, out, opts...)
+func (c *streamerClient) SendToStream(ctx context.Context, opts ...grpc.CallOption) (Streamer_SendToStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Streamer_ServiceDesc.Streams[0], "/stream.Streamer/sendToStream", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &streamerSendToStreamClient{stream}
+	return x, nil
+}
+
+type Streamer_SendToStreamClient interface {
+	Send(*StreamRequest) error
+	CloseAndRecv() (*StreamResponse, error)
+	grpc.ClientStream
+}
+
+type streamerSendToStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *streamerSendToStreamClient) Send(m *StreamRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *streamerSendToStreamClient) CloseAndRecv() (*StreamResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *streamerClient) ReceiveFromStream(ctx context.Context, in *StreamRequest, opts ...grpc.CallOption) (Streamer_ReceiveFromStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Streamer_ServiceDesc.Streams[1], "/stream.Streamer/receiveFromStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &streamerReceiveFromStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Streamer_ReceiveFromStreamClient interface {
+	Recv() (*StreamResponse, error)
+	grpc.ClientStream
+}
+
+type streamerReceiveFromStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *streamerReceiveFromStreamClient) Recv() (*StreamResponse, error) {
+	m := new(StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *streamerClient) ChatInStream(ctx context.Context, opts ...grpc.CallOption) (Streamer_ChatInStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Streamer_ServiceDesc.Streams[2], "/stream.Streamer/chatInStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &streamerChatInStreamClient{stream}
+	return x, nil
+}
+
+type Streamer_ChatInStreamClient interface {
+	Send(*StreamRequest) error
+	Recv() (*StreamResponse, error)
+	grpc.ClientStream
+}
+
+type streamerChatInStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *streamerChatInStreamClient) Send(m *StreamRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *streamerChatInStreamClient) Recv() (*StreamResponse, error) {
+	m := new(StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // StreamerServer is the server API for Streamer service.
 // All implementations must embed UnimplementedStreamerServer
 // for forward compatibility
 type StreamerServer interface {
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	SendToStream(Streamer_SendToStreamServer) error
+	ReceiveFromStream(*StreamRequest, Streamer_ReceiveFromStreamServer) error
+	ChatInStream(Streamer_ChatInStreamServer) error
 	mustEmbedUnimplementedStreamerServer()
 }
 
@@ -54,8 +146,14 @@ type StreamerServer interface {
 type UnimplementedStreamerServer struct {
 }
 
-func (UnimplementedStreamerServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedStreamerServer) SendToStream(Streamer_SendToStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method SendToStream not implemented")
+}
+func (UnimplementedStreamerServer) ReceiveFromStream(*StreamRequest, Streamer_ReceiveFromStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method ReceiveFromStream not implemented")
+}
+func (UnimplementedStreamerServer) ChatInStream(Streamer_ChatInStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method ChatInStream not implemented")
 }
 func (UnimplementedStreamerServer) mustEmbedUnimplementedStreamerServer() {}
 
@@ -70,22 +168,77 @@ func RegisterStreamerServer(s grpc.ServiceRegistrar, srv StreamerServer) {
 	s.RegisterService(&Streamer_ServiceDesc, srv)
 }
 
-func _Streamer_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
-	if err := dec(in); err != nil {
+func _Streamer_SendToStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StreamerServer).SendToStream(&streamerSendToStreamServer{stream})
+}
+
+type Streamer_SendToStreamServer interface {
+	SendAndClose(*StreamResponse) error
+	Recv() (*StreamRequest, error)
+	grpc.ServerStream
+}
+
+type streamerSendToStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *streamerSendToStreamServer) SendAndClose(m *StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *streamerSendToStreamServer) Recv() (*StreamRequest, error) {
+	m := new(StreamRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(StreamerServer).SayHello(ctx, in)
+	return m, nil
+}
+
+func _Streamer_ReceiveFromStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/stream.Streamer/SayHello",
+	return srv.(StreamerServer).ReceiveFromStream(m, &streamerReceiveFromStreamServer{stream})
+}
+
+type Streamer_ReceiveFromStreamServer interface {
+	Send(*StreamResponse) error
+	grpc.ServerStream
+}
+
+type streamerReceiveFromStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *streamerReceiveFromStreamServer) Send(m *StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Streamer_ChatInStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StreamerServer).ChatInStream(&streamerChatInStreamServer{stream})
+}
+
+type Streamer_ChatInStreamServer interface {
+	Send(*StreamResponse) error
+	Recv() (*StreamRequest, error)
+	grpc.ServerStream
+}
+
+type streamerChatInStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *streamerChatInStreamServer) Send(m *StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *streamerChatInStreamServer) Recv() (*StreamRequest, error) {
+	m := new(StreamRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StreamerServer).SayHello(ctx, req.(*HelloRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 // Streamer_ServiceDesc is the grpc.ServiceDesc for Streamer service.
@@ -94,12 +247,24 @@ func _Streamer_SayHello_Handler(srv interface{}, ctx context.Context, dec func(i
 var Streamer_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "stream.Streamer",
 	HandlerType: (*StreamerServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _Streamer_SayHello_Handler,
+			StreamName:    "sendToStream",
+			Handler:       _Streamer_SendToStream_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "receiveFromStream",
+			Handler:       _Streamer_ReceiveFromStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "chatInStream",
+			Handler:       _Streamer_ChatInStream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "stream/stream.proto",
 }
